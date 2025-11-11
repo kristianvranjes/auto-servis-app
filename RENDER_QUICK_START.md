@@ -9,28 +9,33 @@
    git push
    ```
 
-2. **Connect to Render**
+2. **Connect to Render Dashboard**
    - Go to [dashboard.render.com](https://dashboard.render.com)
    - Click **"New +"** → **"Blueprint"**
    - Connect your repository
-   - Render will auto-detect `render.yaml`
+   - Render will auto-detect `render.yaml` and create all 3 services automatically
 
-3. **Set Google OAuth2 Credentials**
-   - After services are created, go to **Backend Service** → **Environment**
-   - Add:
-     - `GOOGLE_CLIENT_ID` = Your Google Client ID
-     - `GOOGLE_CLIENT_SECRET` = Your Google Client Secret
-   - Update Google OAuth2 console with redirect URI:
-     - `https://auto-servis-frontend.onrender.com/login/oauth2/code/google`
+3. **Wait for Initial Deployment** (5-10 minutes)
+   - Database, Backend, and Frontend will deploy automatically
+   - Most environment variables are auto-configured ✅
 
-4. **Initialize Database**
-   - Connect to your database (use Render's connection info)
+4. **Set Google OAuth2 Credentials** (ONLY manual step!)
+   - Click on **"auto-servis-backend"** service
+   - Go to **"Environment"** tab
+   - Add environment variable:
+     - Key: `GOOGLE_CLIENT_ID` → Value: Your Google Client ID
+   - Add environment variable:
+     - Key: `GOOGLE_CLIENT_SECRET` → Value: Your Google Client Secret
+   - Service will auto-redeploy after saving
+
+5. **Update Google OAuth2 Console**
+   - Go to [Google Cloud Console](https://console.cloud.google.com)
+   - Add redirect URI: `https://auto-servis-frontend.onrender.com/login/oauth2/code/google`
+
+6. **Initialize Database**
+   - Connect to database using Render's connection string
    - Run: `BAZA/AutoServisBaza.sql`
    - Optionally run: `BAZA/PopunjenjeBaze.sql`
-
-5. **Wait for Deployment**
-   - All services will deploy automatically
-   - Check logs if any issues occur
 
 ## 📋 What's Configured
 
@@ -47,5 +52,18 @@
 
 ## 📚 Full Documentation
 
-See [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) for detailed instructions and troubleshooting.
+- **[RENDER_DASHBOARD_STEPS.md](./RENDER_DASHBOARD_STEPS.md)** - Detailed step-by-step dashboard guide
+- **[RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md)** - Complete deployment documentation and troubleshooting
+
+## 💡 How Environment Variables Work
+
+**On Render:**
+- ✅ Environment variables are set automatically via `render.yaml`
+- ✅ Spring Boot reads them directly (no .env file needed)
+- ✅ Only `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` need manual setup
+
+**For Local Development:**
+- Copy `backend/env.example` to `backend/.env`
+- Fill in your local values
+- The app will automatically load from `.env` file
 
