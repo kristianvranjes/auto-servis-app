@@ -1,0 +1,66 @@
+services:
+  # PostgreSQL Database
+  - type: pspg
+    name: auto-servis-database
+    databaseName: bregmotors
+    user: autoservis
+    plan: free
+
+  # Backend Service (Spring Boot)
+  - type: web
+    name: auto-servis-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/backend.dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: auto-servis-database
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: auto-servis-database
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: auto-servis-database
+          property: password
+      - key: SPRING_APPLICATION_NAME
+        value: backend
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: validate
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: auto-servis-frontend
+          property: host
+        # Render provides host without protocol, but we need full URL
+        # This will be set to https://auto-servis-frontend.onrender.com (or your custom domain)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+    healthCheckPath: /api/health
+
+  # Frontend Service (React/Vite with Nginx)
+  - type: web
+    name: auto-servis-frontend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./frontend/frontend.dockerfile
+    dockerContext: ./frontend
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: auto-servis-backend
+          property: host
+      - key: PORT
+        value: 80
+    healthCheckPath: /health
+

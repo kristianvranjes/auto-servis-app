@@ -26,6 +26,14 @@ public class SecurityConfig {
         this.customOAuth2UserService = customOAuth2UserService;
     }
 
+    private String getNormalizedFrontendUrl() {
+        // Ensure frontendUrl has protocol (Render may provide host without protocol)
+        if (!frontendUrl.startsWith("http://") && !frontendUrl.startsWith("https://")) {
+            return "https://" + frontendUrl;
+        }
+        return frontendUrl;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -38,10 +46,10 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .defaultSuccessUrl(frontendUrl, true)
+                        .defaultSuccessUrl(getNormalizedFrontendUrl(), true)
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl(frontendUrl)
+                        .logoutSuccessUrl(getNormalizedFrontendUrl())
                         .deleteCookies("JSESSIONID")
                 );
 
@@ -52,7 +60,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(List.of(frontendUrl));
+        // Ensure frontendUrl has protocol (Render may provide host without protocol)
+        String normalizedFrontendUrl = frontendUrl;
+        if (!normalizedFrontendUrl.startsWith("http://") && !normalizedFrontendUrl.startsWith("https://")) {
+            normalizedFrontendUrl = "https://" + normalizedFrontendUrl;
+        }
+        configuration.setAllowedOrigins(List.of(normalizedFrontendUrl));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));

@@ -1,4 +1,4 @@
-\c bregmotors
+
 
 INSERT INTO Vozilo (registracija, idModel, godinaProizv)
 VALUES
