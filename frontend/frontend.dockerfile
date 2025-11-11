@@ -19,7 +19,10 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # SPA routing: fallback to index.html for unknown routes
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx template so the official nginx image can run envsubst on it at
+# container start. The entrypoint will substitute ${BACKEND_URL} into the
+# generated /etc/nginx/conf.d/default.conf.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,28 @@
+server {
+  listen 80;
+  server_name localhost;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  # Proxy API requests to backend. The `${BACKEND_URL}` placeholder will be
+  # substituted at container start by the official nginx image entrypoint
+  # (envsubst-on-templates). Set BACKEND_URL as an environment variable
+  # in your Render/hosting service to the backend's public URL
+  # (e.g. https://your-backend.onrender.com)
+  location /api/ {
+    proxy_pass ${BACKEND_URL}/api/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /health {
+    return 200 'OK';
+  }
+}
