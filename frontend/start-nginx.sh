@@ -17,8 +17,10 @@ else
     BACKEND_HOST="${BACKEND_HOST}.onrender.com"
   fi
   
-  # Ensure it has https:// protocol (Render uses HTTPS)
-  export BACKEND_URL="https://$BACKEND_HOST"
+  # Use HTTP for backend communication
+  # Backend runs on HTTP (port 8080), Render's load balancer handles HTTPS externally
+  # Internal service-to-service communication should use HTTP
+  export BACKEND_URL="http://$BACKEND_HOST"
 fi
 
 echo "Using BACKEND_URL: $BACKEND_URL"
