@@ -13,10 +13,18 @@ services:
     envVars:
       - key: PORT
         value: 8080
-      - key: SPRING_DATASOURCE_URL
+      - key: SPRING_DATASOURCE_HOST
         fromDatabase:
           name: auto-servis-database
-          property: connectionString
+          property: host
+      - key: SPRING_DATASOURCE_PORT
+        fromDatabase:
+          name: auto-servis-database
+          property: port
+      - key: SPRING_DATASOURCE_DATABASE
+        fromDatabase:
+          name: auto-servis-database
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: auto-servis-database
