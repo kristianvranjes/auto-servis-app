@@ -1,12 +1,9 @@
-services:
-  # PostgreSQL Database
-  - type: pg
-    name: auto-servis-database
-    databaseName: bregmotors
-    user: autoservis
+databases:
+  - name: auto-servis-database
     plan: free
+    databaseName: bregmotors
 
-  # Backend Service (Spring Boot)
+services:
   - type: web
     name: auto-servis-backend
     runtime: docker
@@ -39,15 +36,12 @@ services:
           type: web
           name: auto-servis-frontend
           property: host
-        # Render provides host without protocol, but we need full URL
-        # This will be set to https://auto-servis-frontend.onrender.com (or your custom domain)
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
     healthCheckPath: /api/health
 
-  # Frontend Service (React/Vite with Nginx)
   - type: web
     name: auto-servis-frontend
     runtime: docker
@@ -63,4 +57,3 @@ services:
       - key: PORT
         value: 80
     healthCheckPath: /health
-
