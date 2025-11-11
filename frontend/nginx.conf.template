@@ -22,11 +22,11 @@ server {
     # nginx preserves the full path including /api/ prefix
     # So: /api/marke → ${BACKEND_URL}/api/marke ✅
     
-    proxy_pass ${BACKEND_URL};
+  proxy_pass ${BACKEND_URL};
     proxy_http_version 1.1;
     
-    # Host header: Use backend hostname so backend knows the request is for it
-    proxy_set_header Host ${BACKEND_HOST_ONLY};
+  # Host header: set to the upstream host so backend sees its own hostname
+  proxy_set_header Host $proxy_host;
     
     # Forwarded headers for proper request tracking
     proxy_set_header X-Real-IP $remote_addr;
@@ -52,6 +52,37 @@ server {
     proxy_connect_timeout 60s;
     proxy_send_timeout 60s;
     proxy_read_timeout 60s;
+  }
+
+  # Proxy OAuth authorization and callback endpoints to backend so client
+  # can use relative URLs like /oauth2/authorization/google and /login/oauth2/code/google
+  # and nginx will forward them to the backend defined by BACKEND_URL.
+  location /oauth2/ {
+    proxy_pass ${BACKEND_URL}/oauth2/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header Connection "";
+    proxy_ssl_verify off;
+    proxy_ssl_server_name on;
+    proxy_redirect off;
+  }
+
+  location /login/oauth2/ {
+    proxy_pass ${BACKEND_URL}/login/oauth2/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header Connection "";
+    proxy_ssl_verify off;
+    proxy_ssl_server_name on;
+    proxy_redirect off;
   }
 
   location /health {
