@@ -8,7 +8,10 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [fetchAttempted, setFetchAttempted] = useState(false);
 
-    const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:8080";
+    // Prefer explicit Vite-provided BACKEND URL (build-time) or runtime BACKEND_URL.
+    // If neither is provided we fall back to relative URLs so the frontend can
+    // work when proxied by nginx (i.e. use '/api' paths).
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.BACKEND_URL || '';
 
     useEffect(() => {
         if (fetchAttempted) return; // prevent double fetches

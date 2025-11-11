@@ -16,9 +16,12 @@ export default ({ mode }) => {
 
   // Backend URL for dev proxy. Preference order:
   // 1) frontend env (VITE_BACKEND_URL), 2) frontend BACKEND_URL, 3) repo root VITE_BACKEND_URL, 4) repo root BACKEND_URL, 5) fallback
-  const BACKEND_URL = env.VITE_BACKEND_URL || env.BACKEND_URL || rootEnv.VITE_BACKEND_URL || rootEnv.BACKEND_URL || 'http://localhost:8080'
+  // Resolve BACKEND_URL from envs. For development, default to localhost so
+  // the dev proxy works out of the box; for production builds we prefer an
+  // explicit env var so bundles don't bake-in localhost addresses.
+  const BACKEND_URL = env.VITE_BACKEND_URL || env.BACKEND_URL || rootEnv.VITE_BACKEND_URL || rootEnv.BACKEND_URL || (mode === 'development' ? 'http://localhost:8080' : '')
 
-  console.log(`vite: dev server host=${host} port=${port} proxy /api -> ${BACKEND_URL}`)
+  console.log(`vite: dev server host=${host} port=${port} proxy /api -> ${BACKEND_URL || '(none)'}`)
 
   return defineConfig({
     plugins: [react()],

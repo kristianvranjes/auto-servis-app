@@ -23,14 +23,19 @@ async function handleRes(res) {
   if (ct.includes('application/json')) return res.json()
 
   // If the server returned HTML (usually the frontend index) for an API path,
-  // retry the request directly against the backend dev port. This handles the
-  // common case where the frontend server/container is serving index.html for
-  // unknown paths instead of proxying to the backend.
+  // optionally retry the request directly against a backend URL provided via
+  // env (VITE_BACKEND_URL or BACKEND_URL). This avoids baking localhost into
+  // the production bundle — set VITE_BACKEND_URL at build time for local dev
+  // or BACKEND_URL at runtime when using a templated nginx configuration.
   if (ct.includes('text/html')) {
     try {
       const originalUrl = new URL(res.url)
       const apiPath = originalUrl.pathname + originalUrl.search
-      const fallback = 'http://localhost:8080' + apiPath
+      const fallbackBase = (typeof import.meta !== 'undefined' && import.meta.env)
+        ? (import.meta.env.VITE_BACKEND_URL || import.meta.env.BACKEND_URL || '')
+        : ''
+      if (!fallbackBase) return res.text()
+      const fallback = fallbackBase.replace(/\/$/, '') + apiPath
       const retry = await fetch(fallback, { method: res.request ? res.request.method : 'GET' })
       if (!retry.ok) {
         const txt = await retry.text().catch(() => '')
