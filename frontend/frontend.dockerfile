@@ -24,5 +24,9 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # generated /etc/nginx/conf.d/default.conf.
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
+# Copy startup script to ensure BACKEND_URL is set before nginx starts
+COPY start-nginx.sh /start-nginx.sh
+RUN chmod +x /start-nginx.sh
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/start-nginx.sh"]
