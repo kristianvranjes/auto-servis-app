@@ -38,7 +38,7 @@ services:
       - key: SPRING_JPA_SHOW_SQL
         value: "false"
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
-        value: validate
+        value: update
       - key: FRONTEND_URL
         fromService:
           type: web
