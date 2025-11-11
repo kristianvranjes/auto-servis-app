@@ -15,10 +15,9 @@ server {
   # in your Render/hosting service to the backend's public URL
   # (e.g. https://your-backend.onrender.com)
   location /api/ {
-    # BACKEND_URL is set by startup script with HTTP protocol (e.g., http://auto-servis-backend.onrender.com)
+    # BACKEND_URL is set by startup script with HTTPS protocol (e.g., https://auto-servis-backend.onrender.com)
     # BACKEND_HOST_ONLY is just the hostname (e.g., auto-servis-backend.onrender.com)
-    # Backend runs on HTTP (port 8080), Render's load balancer handles HTTPS externally
-    # Use BACKEND_HOST_ONLY for Host header to avoid redirects
+    # Render's public URLs require HTTPS to avoid redirect loops
     proxy_pass ${BACKEND_URL};
     proxy_http_version 1.1;
     # Use backend hostname for Host header (important to avoid redirects)
@@ -27,6 +26,9 @@ server {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Connection "";
+    # SSL configuration for HTTPS upstream
+    proxy_ssl_verify off;
+    proxy_ssl_server_name on;
     # Don't follow redirects
     proxy_redirect off;
   }

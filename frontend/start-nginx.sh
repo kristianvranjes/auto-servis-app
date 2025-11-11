@@ -20,11 +20,11 @@ else
     BACKEND_HOST="${BACKEND_HOST}.onrender.com"
   fi
   
-  # Use HTTP for backend communication
-  # Backend runs on HTTP (port 8080), Render's load balancer handles HTTPS externally
-  # Internal service-to-service communication should use HTTP
+  # Use HTTPS for backend communication
+  # Render's public URLs require HTTPS (HTTP redirects to HTTPS causing loops)
+  # The backend runs on HTTP internally, but Render's load balancer exposes it via HTTPS
   # Store both the full URL and just the hostname
-  export BACKEND_URL="http://$BACKEND_HOST"
+  export BACKEND_URL="https://$BACKEND_HOST"
   export BACKEND_HOST_ONLY="$BACKEND_HOST"
 fi
 
