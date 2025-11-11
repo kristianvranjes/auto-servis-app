@@ -5,10 +5,13 @@
 if [ -z "$BACKEND_URL" ]; then
   echo "WARNING: BACKEND_URL is not set, using default localhost:8080"
   export BACKEND_URL="http://localhost:8080"
+  export BACKEND_HOST_ONLY="localhost:8080"
 else
   # Remove any existing protocol to normalize
   BACKEND_HOST="${BACKEND_URL#http://}"
   BACKEND_HOST="${BACKEND_HOST#https://}"
+  # Remove trailing slash if present
+  BACKEND_HOST="${BACKEND_HOST%/}"
   
   # If BACKEND_HOST doesn't contain a dot, it's likely just a service name
   # Append .onrender.com to make it a proper hostname
@@ -20,13 +23,17 @@ else
   # Use HTTP for backend communication
   # Backend runs on HTTP (port 8080), Render's load balancer handles HTTPS externally
   # Internal service-to-service communication should use HTTP
+  # Store both the full URL and just the hostname
   export BACKEND_URL="http://$BACKEND_HOST"
+  export BACKEND_HOST_ONLY="$BACKEND_HOST"
 fi
 
 echo "Using BACKEND_URL: $BACKEND_URL"
+echo "Using BACKEND_HOST_ONLY: $BACKEND_HOST_ONLY"
 
-# Export BACKEND_URL so envsubst can use it
+# Export variables so envsubst can use them
 export BACKEND_URL
+export BACKEND_HOST_ONLY
 
 # Start nginx with the official entrypoint (which runs envsubst on templates)
 exec /docker-entrypoint.sh nginx -g "daemon off;"

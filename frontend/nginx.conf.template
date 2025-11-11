@@ -15,15 +15,20 @@ server {
   # in your Render/hosting service to the backend's public URL
   # (e.g. https://your-backend.onrender.com)
   location /api/ {
-    # BACKEND_URL is set by startup script with HTTP protocol
+    # BACKEND_URL is set by startup script with HTTP protocol (e.g., http://auto-servis-backend.onrender.com)
+    # BACKEND_HOST_ONLY is just the hostname (e.g., auto-servis-backend.onrender.com)
     # Backend runs on HTTP (port 8080), Render's load balancer handles HTTPS externally
-    proxy_pass ${BACKEND_URL}/api/;
+    # Use BACKEND_HOST_ONLY for Host header to avoid redirects
+    proxy_pass ${BACKEND_URL};
     proxy_http_version 1.1;
-    proxy_set_header Host $host;
+    # Use backend hostname for Host header (important to avoid redirects)
+    proxy_set_header Host ${BACKEND_HOST_ONLY};
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Connection "";
+    # Don't follow redirects
+    proxy_redirect off;
   }
 
   location /health {
