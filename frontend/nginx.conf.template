@@ -15,22 +15,43 @@ server {
   # in your Render/hosting service to the backend's public URL
   # (e.g. https://your-backend.onrender.com)
   location /api/ {
-    # BACKEND_URL is set by startup script with HTTPS protocol (e.g., https://auto-servis-backend.onrender.com)
-    # BACKEND_HOST_ONLY is just the hostname (e.g., auto-servis-backend.onrender.com)
-    # Render's public URLs require HTTPS to avoid redirect loops
+    # Frontend sends: /api/marke → Backend expects: /api/marke
+    # Nginx proxies: https://frontend.onrender.com/api/marke → https://backend.onrender.com/api/marke
+    # 
+    # When location is /api/ (with trailing slash) and proxy_pass has no trailing slash,
+    # nginx preserves the full path including /api/ prefix
+    # So: /api/marke → ${BACKEND_URL}/api/marke ✅
+    
     proxy_pass ${BACKEND_URL};
     proxy_http_version 1.1;
-    # Use backend hostname for Host header (important to avoid redirects)
+    
+    # Host header: Use backend hostname so backend knows the request is for it
     proxy_set_header Host ${BACKEND_HOST_ONLY};
+    
+    # Forwarded headers for proper request tracking
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Host $host;
+    
+    # CORS: Don't set Origin header - let nginx preserve the browser's original Origin
+    # The browser sends: Origin: https://auto-servis-frontend.onrender.com
+    # Backend's CORS config allows this origin, so we just pass it through
+    # (nginx preserves headers by default, so we don't need to set it)
+    
     proxy_set_header Connection "";
-    # SSL configuration for HTTPS upstream
+    
+    # SSL for HTTPS upstream (backend is accessed via HTTPS)
     proxy_ssl_verify off;
     proxy_ssl_server_name on;
-    # Don't follow redirects
+    
+    # Critical: Don't modify redirects - if backend sends redirect, pass it through
     proxy_redirect off;
+    
+    # Timeouts
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
   }
 
   location /health {
