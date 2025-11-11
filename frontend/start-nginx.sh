@@ -5,12 +5,20 @@
 if [ -z "$BACKEND_URL" ]; then
   echo "WARNING: BACKEND_URL is not set, using default localhost:8080"
   export BACKEND_URL="http://localhost:8080"
-fi
-
-# Ensure BACKEND_URL has a protocol
-if [ "${BACKEND_URL#http://}" = "$BACKEND_URL" ] && [ "${BACKEND_URL#https://}" = "$BACKEND_URL" ]; then
-  echo "WARNING: BACKEND_URL missing protocol, adding https://"
-  export BACKEND_URL="https://$BACKEND_URL"
+else
+  # Remove any existing protocol to normalize
+  BACKEND_HOST="${BACKEND_URL#http://}"
+  BACKEND_HOST="${BACKEND_HOST#https://}"
+  
+  # If BACKEND_HOST doesn't contain a dot, it's likely just a service name
+  # Append .onrender.com to make it a proper hostname
+  if [ "$BACKEND_HOST" = "${BACKEND_HOST#*.}" ]; then
+    echo "WARNING: BACKEND_URL appears to be just a service name, appending .onrender.com"
+    BACKEND_HOST="${BACKEND_HOST}.onrender.com"
+  fi
+  
+  # Ensure it has https:// protocol (Render uses HTTPS)
+  export BACKEND_URL="https://$BACKEND_HOST"
 fi
 
 echo "Using BACKEND_URL: $BACKEND_URL"
