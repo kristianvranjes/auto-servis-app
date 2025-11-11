@@ -40,10 +40,10 @@ services:
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: auto-servis-frontend
-          property: host
+        # Use the full public URL (including scheme) so backend and CORS get an
+        # absolute frontend address. Replace with your real frontend host if
+        # different.
+        value: https://auto-servis-frontend.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -58,10 +58,9 @@ services:
     dockerContext: ./frontend
     envVars:
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: auto-servis-backend
-          property: host
+        # Set the runtime BACKEND_URL to the full backend public URL (including https).
+        # This will be substituted into the nginx template at container start.
+        value: https://auto-servis-backend.onrender.com
       - key: PORT
         value: 80
     healthCheckPath: /health
